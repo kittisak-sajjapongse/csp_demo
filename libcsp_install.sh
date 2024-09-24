@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sudo apt-get install -y build-essentials cmake ninja-build libsocketcan2 libsocketcan-dev
+sudo apt-get install -y build-essential cmake ninja-build libsocketcan2 libsocketcan-dev
 git clone https://github.com/libcsp/libcsp.git
 cd libcsp
 
