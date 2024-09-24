@@ -7,10 +7,11 @@ opens a CAN interface, and starts a server that listens for connections and proc
 #include <csp/drivers/can_socketcan.h>  // This header includes the CAN interface driver for SocketCAN.
 #include <stdlib.h>  //  Provides standard library functions, such as memory management and process control.
 #include <pthread.h> // Provides the POSIX threads library to create and manage threads.
+#include <unistd.h> // For parsing arguments
+#include <stdio.h> // For printing
+#include <string.h>
 
 #define SERVER_PORT		10  // The port number on which the server will listen for incoming connections.
-#define device_name     "vcan0" // he name of the CAN interface (here it's vcan0, which is a virtual CAN interface used for testing).
-static uint8_t server_address = 1; // The address of the server on the CAN network. (Chanel)
 
 /* Thread Creation for Router */
 /* This function creates a new POSIX thread. */
@@ -55,9 +56,12 @@ int router_start(void) {
 	return csp_pthread_create(task_router);
 }
 
-
-int main(int argc, char * argv[]) {
-
+/**
+ * @param device_name - The name of the CAN interface (here it's vcan0, which is a virtual CAN interface used for testing).
+ * @param server_address - The address of the server on the CAN network. (Chanel)
+ *                         Note: Address "0" is reserved for loop-back.
+ */ 
+int receiver(const char* device_name, const uint8_t server_address) {
     csp_print("Initialising CSP\n");
 
     /* Init CSP */
@@ -147,4 +151,38 @@ int main(int argc, char * argv[]) {
     }
 
     return 0;
+}
+
+int main(int argc, char * argv[]) {
+	int opt;
+	int has_device = 0;
+	char device[128] = "";
+	int has_address = 0;
+	uint8_t address = 0; // 0 is reserved for loop-back
+
+    // Parse the command-line options
+    while ((opt = getopt(argc, argv, "a:d:h")) != -1) {
+        switch (opt) {
+            case 'h':
+                printf("Usage: ./%s [-h] [-ad]\n", argv[0]);
+				return -1;
+                break;
+            case 'a':
+                address = atoi(optarg);
+				has_address = 1;
+                break;
+			case 'd':
+                strcpy(device, optarg);
+				has_device = 1;
+                break;
+            default:
+                printf("Usage: ./program [-h] [-ad]\n");
+                return 1;
+        }
+    }
+	if ((!has_device) || (!has_address)) {
+		printf("Please specify both 'device' and 'address' using -a and -d options.\n");
+		return -1;
+	}
+	return receiver(device, address);
 }

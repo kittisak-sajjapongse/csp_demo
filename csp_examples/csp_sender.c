@@ -6,17 +6,20 @@ connects to a server on the network, and sends a message.*/
 #include <csp/csp.h> //Includes the CSP (CubeSat Space Protocol) library headers.
 #include <csp/drivers/can_socketcan.h> //Includes the SocketCAN driver for using CAN (Controller Area Network) interfaces.
 #include <stdlib.h> //Standard library for functions like exit()
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
 
-#define DEVICE_NAME     "vcan2"  // Specifies the CAN interface name
-#define SERVER_PORT		10   //Defines the port number on the server side where the client will connect (in this case, port 10).
+#define SERVER_PORT 10  //Defines the port number on the server side where the client will connect (in this case, port 10).
 
-/* Commandline options */
-static uint8_t server_address = 1;
-static uint8_t client_address = 2;
-
-// static unsigned int successful_ping = 0;
-
-int main(int argc, char** argv) {
+/**
+ * @param device_name - Specifies the CAN interface name
+ * @param address - Address of the sender itself for sending the message. 
+ *                  Note: Address "0" is reserved for loop-back.
+ * @param target_address - Address of the listener who is waiting for the message to be sent
+ *                         Note: Address "0" is reserved for loop-back.
+ */
+int sender(const char* device_name, const uint8_t address, const uint8_t target_address) {
     //KS: This was copied from ${LIBCSP_DIR}/examples/csp_server_client.c (Look at function client())
    
     /* Init CSP */
@@ -33,9 +36,9 @@ int main(int argc, char** argv) {
 
     int bitrate = 1000000; //The CAN bus bitrate is set to 1 Mbps (1,000,000 bits per second).
     // Opens the CAN interface (vcan2)
-    int error = csp_can_socketcan_open_and_add_interface(DEVICE_NAME, CSP_IF_CAN_DEFAULT_NAME, client_address, bitrate, true, &default_iface);   
+    int error = csp_can_socketcan_open_and_add_interface(device_name, CSP_IF_CAN_DEFAULT_NAME, address, bitrate, true, &default_iface);   
     if (error != CSP_ERR_NONE) {
-			csp_print("failed to add CAN interface [%s], error: %d\n", DEVICE_NAME, error);
+			csp_print("failed to add CAN interface [%s], error: %d\n", device_name, error);
             exit(1); //If the interface setup fails, the program prints an error message and exits.
     }
 
@@ -64,8 +67,8 @@ int main(int argc, char** argv) {
 	// csp_print("Client started\n");
 
     /* Send ping to server, timeout 1000 mS, ping size 100 bytes */
-    // int result = csp_ping(server_address, 1000, 100, CSP_O_NONE);
-    // csp_print("Ping address: %u, result %d [mS]\n", server_address, result);
+    // int result = csp_ping(target_address, 1000, 100, CSP_O_NONE);
+    // csp_print("Ping address: %u, result %d [mS]\n", target_address, result);
     // Increment successful_ping if ping was successful
     // if (result >= 0) {
     //     ++successful_ping;
@@ -74,14 +77,14 @@ int main(int argc, char** argv) {
 
     /* =========  Send data packet (string) to server ========= */
 
-    /* 1. Connect to host on 'server_address', port SERVER_PORT with regular UDP-like protocol and 1000 ms timeout */
+    /* 1. Connect to host on 'target_address', port SERVER_PORT with regular UDP-like protocol and 1000 ms timeout */
     /*csp_connect(): This function establishes a connection to the server.
         - CSP_PRIO_NORM: Sets normal priority for the connection.
-        - server_address: The destination server address (set to 1).
+        - target_address: The destination server address (set to 1).
         - SERVER_PORT: The port on the server the client will connect to (set to 10).
         - 1000: Timeout in milliseconds (1 second) for establishing the connection.
         - CSP_O_NONE: No special options are passed during connection establishment.*/
-	csp_conn_t * conn = csp_connect(CSP_PRIO_NORM, server_address, SERVER_PORT, 1000, CSP_O_NONE);
+	csp_conn_t * conn = csp_connect(CSP_PRIO_NORM, target_address, SERVER_PORT, 1000, CSP_O_NONE);
     if (conn == NULL) {
 			/* Connect failed */
 			csp_print("Connection failed\n");
@@ -117,8 +120,48 @@ int main(int argc, char** argv) {
 
     /* 6. Close connection */
     csp_close(conn); //Closes the connection after the data has been successfully sent.
-    csp_print("Send data successed\n");
+    csp_print("Data sent successfully\n");
     return 0;
+}
+
+int main(int argc, char** argv) {
+    int opt;
+	int has_device = 0;
+	char device[128] = "";
+	int has_address = 0;
+	uint8_t address = 0; // 0 is reserved for loop-back
+    int has_target_address = 0;
+	uint8_t target_address = 0; // 0 is reserved for loop-back
+
+    // Parse the command-line options
+    while ((opt = getopt(argc, argv, "a:d:ht:")) != -1) {
+        switch (opt) {
+            case 'h':
+                printf("Usage: ./%s [-h] [-ad]\n", argv[0]);
+				return -1;
+                break;
+            case 'a':
+                address = atoi(optarg);
+				has_address = 1;
+                break;
+			case 'd':
+                strcpy(device, optarg);
+				has_device = 1;
+                break;
+            case 't':
+                target_address = atoi(optarg);
+				has_target_address = 1;
+                break;
+            default:
+                printf("Usage: ./program [-h] [-adt]\n");
+                return 1;
+        }
+    }
+	if ((!has_device) || (!has_address) || (!has_target_address)) {
+		printf("Please specify 'device','address', and 'target address' using -a,-d, and -t options.\n");
+		return -1;
+	}
+    return sender(device, address, target_address);
 }
 
 
