@@ -21,4 +21,4 @@ sudo ./waf build install
 # # === CMake ===
 # # The CMake build is incomplete in our opinion because it has only dynamic library which is incomplete in itself.
 # cmake -G Ninja -B builddir
-cmake --build builddir
+# cmake --build builddir
