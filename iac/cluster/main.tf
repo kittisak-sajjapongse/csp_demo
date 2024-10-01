@@ -71,16 +71,7 @@ locals {
       - sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
       - systemctl restart ssh
       - cd /root; git clone https://github.com/kittisak-sajjapongse/csp_demo.git
-      - #!/usr/bin/env bash
-      - set -e
-      - git clone https://github.com/linux-can/socketcand.git
-      - cd socketcand
-      - sudo apt-get install -y autoconf build-essential net-tools | tee apt-get.log
-      - autoupdate
-      - ./autogen.sh | tee autogen.log
-      - ./configure | tee configure.log
-      - make | tee make.log
-      - sudo make install | tee make_install.log
+      - ./csp_demo/socketcand_setup.sh
   EOF
 }
 

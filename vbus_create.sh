@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# References:
+# [1] Example of using socketcand & socketcandcl - https://agill.xyz/tunneling-can#toc_7
+# [2] Socketcand text protocol - https://github.com/linux-can/socketcand/blob/master/doc/protocol.md
+# [3] Socketcand GitHub page - https://github.com/linux-can/socketcand
+
 set -e
 
 # Path to the configuration file
