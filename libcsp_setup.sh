@@ -13,7 +13,7 @@ wget https://waf.io/waf-2.1.2
 chmod 755 waf-2.1.2
 mv waf-2.1.2 waf
 # Look at  vi examples/buildall.py for options with waf
-./waf configure --prefix=install --enable-shlib --enable-python3-bindings --enable-examples --enable-can-socketcan --enable-if-zmqhub --with-driver-usart=linux --with-os=posix --enable-promisc
+./waf configure --prefix=/usr --enable-shlib --enable-python3-bindings --enable-examples --enable-can-socketcan --enable-if-zmqhub --with-driver-usart=linux --with-os=posix --enable-promisc
 
 # This will install at location /usr/local/lib/python3.12/dist-packages/libcsp_py3.cpython-312-x86_64-linux-gnu.so
 sudo ./waf build install
