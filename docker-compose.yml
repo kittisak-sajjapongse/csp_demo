@@ -1,0 +1,15 @@
+networks:
+  egse_net:
+    name: egse_net
+    driver: bridge
+
+services:
+  nats:
+    image: nats:latest
+    container_name: nats
+    hostname: nats
+    networks:
+      - egse_net
+    ports:
+      - 4222:4222
+    restart: always

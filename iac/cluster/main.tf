@@ -56,13 +56,13 @@ locals {
   cloud_init = <<-EOF
     #cloud-config
     users:
-      - name: ceph
-        gecos: Ceph User
+      - name: egse
+        gecos: EGSE User
         groups: sudo
         shell: /bin/bash
         sudo: ALL=(ALL:ALL) ALL
         lock_passwd: false
-        passwd: $(echo 'cephpoc' | openssl passwd -1 -stdin)
+        passwd: $(echo 'egsepoc' | openssl passwd -1 -stdin)
     chpasswd:
       list: |
         root:changeme
@@ -71,6 +71,8 @@ locals {
       - sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
       - systemctl restart ssh
       - cd /root; git clone https://github.com/kittisak-sajjapongse/csp_demo.git
+      # Sequence matters here in the setup scripts because of 'apt-get install'
+      - ./csp_demo/libcsp_setup.sh
       - ./csp_demo/socketcand_setup.sh
       - ./csp_demo/docker_setup.sh
   EOF
