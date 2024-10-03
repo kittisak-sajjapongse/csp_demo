@@ -75,6 +75,7 @@ locals {
       - ./csp_demo/libcsp_setup.sh
       - ./csp_demo/socketcand_setup.sh
       - ./csp_demo/docker_setup.sh
+      - ./csp_demo/nats_setup.sh
       - cd csp_demo; docker compose up -d
   EOF
 }
