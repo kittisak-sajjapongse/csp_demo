@@ -72,6 +72,7 @@ locals {
       - systemctl restart ssh
       - cd /root; git clone https://github.com/kittisak-sajjapongse/csp_demo.git
       - ./csp_demo/socketcand_setup.sh
+      - ./csp_demo/docker_setup.sh
   EOF
 }
 
