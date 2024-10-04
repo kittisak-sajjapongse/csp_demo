@@ -1,4 +1,4 @@
-#include "connection.c"
+#include "connection.h"
 
 void subscription_handler(natsConnection *nc, natsSubscription *sub, natsMsg *msg, void *closure) {
     printf("Received message: %s\n", natsMsg_GetData(msg));

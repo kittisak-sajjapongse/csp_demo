@@ -1,4 +1,4 @@
-#include "connection.c"
+#include "connection.h"
 
 int main(int argc, char** argv) {
     natsOptions* opts;
