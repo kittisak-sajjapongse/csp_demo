@@ -13,17 +13,9 @@ int main(int argc, char** argv) {
 
     natsSubscription* sub = NULL;
     SAFE_CALL(natsConnection_Subscribe(&sub, conn, "mySubject", subscription_handler, NULL), "Subscribe");
-    while(true) {
+    while(1) {
         nats_Sleep(1000);
     }
-
-    // SAFE_CALL(natsConnection_SubscribeSync(&sub, conn, "mySubject"), "Subscribe_Sync");
-    // natsMsg* msg;
-    // while (1) {
-    //     SAFE_CALL(natsSubscription_NextMsg(&msg, sub, 10000000), "NextMsg");
-    //     printf("Message received\n");
-    // }
-
     
     natsSubscription_Destroy(sub);
     nats_finalize(opts, conn);
