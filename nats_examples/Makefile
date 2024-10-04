@@ -1,6 +1,6 @@
 .phony: clean
 
-ALL_TARGETS=connect
+ALL_TARGETS=connect subscribe
 
 all: ${ALL_TARGETS}
 	@echo "NATS examples Built successfully"
