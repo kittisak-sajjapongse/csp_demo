@@ -1,11 +1,9 @@
-// This is for omitting the prefix of natsConnStatus
-#define NATS_CONN_STATUS_NO_PREFIX
+#include "connection.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include <nats/nats.h>
 
 // Function to get the current time as a string
 const char* current_time() {
@@ -29,8 +27,6 @@ void safe_call(natsStatus status, const char* msg, const char* file, int line) {
         exit(EXIT_FAILURE);
     }
 }
-
-#define SAFE_CALL(status, msg) safe_call(status, msg, __FILE__, __LINE__)
 
 void nats_connect(natsOptions** r_opts, natsConnection** r_conn, const char* url) {
     natsOptions* opts;
@@ -62,17 +58,4 @@ void nats_connect(natsOptions** r_opts, natsConnection** r_conn, const char* url
 void nats_finalize(natsOptions* opts, natsConnection* conn) {
     natsConnection_Destroy(conn);
     natsOptions_Destroy(opts);
-}
-
-int main(int argc, char** argv) {
-    natsOptions* opts;
-    natsConnection* conn;
-    nats_connect(&opts, &conn, "nats://127.0.0.1:4222");
-
-    SAFE_CALL(natsConnection_PublishString(conn, "mySubject", "Hello"), "Publish");
-    // natsConnection_Subscribe
-    
-    nats_finalize(opts, conn);
-
-    return 0;
 }
