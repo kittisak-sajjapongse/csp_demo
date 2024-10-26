@@ -20,6 +20,11 @@ variable "region" {
   default = "sgp1"
 }
 
+variable "libcsp1_0" {
+  type = bool
+  default = true
+}
+
 resource "digitalocean_project" "vcan_cluster" {
   name        = "vcan_cluster"
   description = "Development infrastructure for EGSE"
@@ -53,7 +58,7 @@ variable "hosts" {
 }
 
 locals {
-  cloud_init = <<-EOF
+  cloud_init_latest = <<-EOF
     #cloud-config
     users:
       - name: egse
@@ -78,6 +83,32 @@ locals {
       - ./csp_demo/nats_setup.sh
       - cd csp_demo; docker compose up -d
   EOF
+  cloud_init_libcsp1_0 = <<-EOF
+    #cloud-config
+    users:
+      - name: egse
+        gecos: EGSE User
+        groups: sudo
+        shell: /bin/bash
+        sudo: ALL=(ALL:ALL) ALL
+        lock_passwd: false
+        passwd: $(echo 'egsepoc' | openssl passwd -1 -stdin)
+    chpasswd:
+      list: |
+        root:changeme
+      expire: False
+    runcmd:
+      - sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
+      - systemctl restart ssh
+      - cd /root; git clone https://github.com/kittisak-sajjapongse/csp_demo.git
+      # Sequence matters here in the setup scripts because of 'apt-get install'
+      - ./csp_demo/libcsp10_setup.sh
+      - ./csp_demo/socketcand_setup.sh
+      - ./csp_demo/docker_setup.sh
+      - ./csp_demo/nats_setup.sh
+      - cd csp_demo; docker compose up -d
+  EOF
+  cloud_init = var.libcsp1_0 ? local.cloud_init_libcsp1_0 : local.cloud_init_latest
 }
 
 
