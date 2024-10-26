@@ -6,7 +6,7 @@ cd ~; mkdir python3.4; cd python3.4; wget https://www.python.org/ftp/python/3.4.
 tar -zxvf Python-3.4.7.tgz; cd Python-3.4.7; ./configure --prefix=/opt/python3.4.7; make -j2; sudo make install
 sudo ln -s /opt/python3.4.7/bin/python3 /usr/bin/python
 
-sudo apt-get install -y pkg-config libsocketcan2 libsocketcan-dev libzmq3-dev
+sudo apt-get install -y pkg-config python3-dev libsocketcan2 libsocketcan-dev libzmq3-dev
 cd ~;git clone https://github.com/libcsp/libcsp.git; cd libcsp
 git checkout libcsp-1
 # Fix compile error
