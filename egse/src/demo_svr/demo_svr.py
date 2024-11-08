@@ -4,8 +4,14 @@ import random
 import time
 import uuid
 import sys
+from datetime import datetime, timezone
 
 class JsonFormatter(logging.Formatter):
+    def formatTime(self, record, datefmt=None):
+        # Use UTC for the asctime and format as per ISO 8601
+        utc_time = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        return utc_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    
     def format(self, record):
         message = super().format(record)
         return json.dumps({
@@ -15,15 +21,6 @@ class JsonFormatter(logging.Formatter):
             'request_id': record.request_id,
             'message': message
         })
-
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format='%(asctime)s - %(name)s - %(levelname)s - RequestID: %(request_id)s - %(message)s',
-#     handlers=[
-#         logging.StreamHandler(),
-#         # logging.FileHandler('demo_svr.log')
-#     ]
-# )
 
 org_logger = logging.getLogger('demo_svr')
 org_logger.setLevel(logging.INFO)
