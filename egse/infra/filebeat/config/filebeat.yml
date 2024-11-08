@@ -2,7 +2,7 @@ filebeat.inputs:
   - type: log
     enabled: true
     paths:
-      - /app/logs/demo_svr.log
+      - /app/logs/**/*.log
     fields:
       log_type: demo-service
 
