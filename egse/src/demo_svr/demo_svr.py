@@ -31,7 +31,11 @@ org_logger.setLevel(logging.INFO)
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(JsonFormatter())
 
+file_handler = logging.FileHandler('./logs/demo_svr.log')
+file_handler.setFormatter(JsonFormatter())
+
 org_logger.addHandler(stream_handler)
+org_logger.addHandler(file_handler)
 
 def simulate_activity():
     request_id = str(uuid.uuid4())

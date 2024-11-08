@@ -38,11 +38,23 @@ services:
       - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     ports:
       - "12201:12201/udp"
-    depends_on:
-      - elasticsearch
     networks:
       - egse_net
+    depends_on:
+      - elasticsearch
     restart: always
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.1.0
+    container_name: filebeat
+    volumes:
+      - ./demo_svr/logs:/app/logs
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    networks:
+      - egse_net
+    depends_on:
+      - logstash
+    command: filebeat -e -c /usr/share/filebeat/filebeat.yml
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.0
@@ -64,11 +76,8 @@ services:
     hostname: demo_svr
     networks:
       - egse_net
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
-        tag: "api"
+    volumes:
+      - ./demo_svr/logs:/app/logs
     depends_on:
       - logstash
     restart: always
