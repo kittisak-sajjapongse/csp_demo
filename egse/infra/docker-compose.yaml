@@ -1,0 +1,68 @@
+networks:
+  egse_net:
+    name: egse_net
+    driver: bridge
+services:
+  nats:
+    image: nats:2.10.22-linux
+    container_name: nats
+    hostname: nats
+    networks:
+      - egse_net
+    ports:
+      - 4222:4222
+    restart: always
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - egse_net
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data  
+    restart: always
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    volumes:
+      - ./logstash/logstash.conf:/etc/logstash/conf.d/logstash.conf
+    ports:
+      - "5010:5010"
+    depends_on:
+      - elasticsearch
+    networks:
+      - egse_net
+    restart: always
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - egse_net
+    volumes:
+      - ./kibana/config:/usr/share/kibana/config
+      - ./kibana/data:/usr/share/kibana/data
+    restart: always
+
+  demo_svr:
+    image: demo_svr:${IMAGE_TAG}
+    container_name: demo_svr
+    hostname: demo_svr
+    networks:
+      - egse_net
+    logging:
+      driver: json-file
+      options:
+        labels: "demo_svr"
+        env: "demo_svr"
+    restart: always
