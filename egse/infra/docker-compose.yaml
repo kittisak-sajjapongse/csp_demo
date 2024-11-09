@@ -1,0 +1,83 @@
+networks:
+  egse_net:
+    name: egse_net
+    driver: bridge
+services:
+  nats:
+    image: nats:2.10.22-linux
+    container_name: nats
+    hostname: nats
+    networks:
+      - egse_net
+    ports:
+      - 4222:4222
+    restart: always
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - "http.host=0.0.0.0"
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    networks:
+      - egse_net
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data  
+    restart: always
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "12201:12201/udp"
+    networks:
+      - egse_net
+    depends_on:
+      - elasticsearch
+    restart: always
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.1.0
+    container_name: filebeat
+    volumes:
+      - ./demo_svr/logs:/app/logs
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    networks:
+      - egse_net
+    depends_on:
+      - logstash
+    command: filebeat -e -c /usr/share/filebeat/filebeat.yml
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    networks:
+      - egse_net
+    volumes:
+      - ./kibana/config:/usr/share/kibana/config
+      - ./kibana/data:/usr/share/kibana/data
+    depends_on:
+      - elasticsearch
+    restart: always
+
+  demo_svr:
+    image: demo_svr:${IMAGE_TAG}
+    container_name: demo_svr
+    hostname: demo_svr
+    networks:
+      - egse_net
+    volumes:
+      - ./demo_svr/logs:/app/logs
+    depends_on:
+      - logstash
+    restart: always
